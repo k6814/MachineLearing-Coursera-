@@ -1,0 +1,67 @@
+---
+title: "Machine Learning Project"
+author: "Kevin"
+date: "January 28, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Instructions
+The goal of your project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases.
+##Reading data
+```{r cars}
+ pml.training <- read.csv("G:/download/pml-training.csv")
+pml.testing <- read.csv("G:/download/pml-testing.csv")
+```
+
+##Data Cleaning
+Here,we are deleting columns having missing values.
+```{r pressure}
+
+removeCol <- c("X","user_name","raw_timestamp_part_1","raw_timestamp_part_2","cvtd_timestamp","new_window")
+pml.training <- pml.training[,!(names(pml.training) %in% removeCol)]
+pml.testing <- pml.testing[,!(names(pml.testing) %in% removeCol)]
+pml.training[pml.training==""] <- NA
+pml.training<-pml.training[,colSums(is.na(pml.training)) == 0]
+pml.testing <-pml.testing[,colSums(is.na(pml.testing)) == 0]
+ 
+```
+
+##Cross-validation
+Cross-validation will be performed by subsampling our training data set randomly without replacement into 2 subsamples: train data (70% of the original Training data set) and test data (30% of the original Testing data set). 
+```{r pressuasre}
+library("caTools")
+split <- sample.split(pml.training, SplitRatio =.7)
+train <- subset(pml.training, split == TRUE)
+test <- subset(pml.training, split == FALSE)
+ 
+```
+##PCA
+PCA algorithm is used to reduce the number of dimensions
+```{r hnknhl,}
+M<-abs(cor(train[,-ncol(train)]))
+diag(M)=0
+which(M>.8,arr.ind=T)
+```
+##Random Forest Model
+
+```{r hnkxsrnhl,}
+library("caret")
+library("randomForest")
+model=randomForest(train$classe~.,data=train,prox=T)
+prediction2 <- predict(model, test, type = "class")
+confusionMatrix(prediction2, test$classe)
+
+```
+The above Random forest algorithm has accuracy of 0.9977.
+
+
+##Final Prediction
+```{r hnkfhfyhnhl,}
+predictfinal <- predict(model,pml.testing, type="class")
+predictfinal
+```
+
